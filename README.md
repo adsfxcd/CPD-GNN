@@ -32,7 +32,7 @@ The following datasets are used in this research:
 
 [IEMOCAP](https://sail.usc.edu/iemocap/index.html), [CMU-MOSI](http://multicomp.cs.cmu.edu/resources/cmu-mosi-dataset/), [CMU-MOSEI](http://multicomp.cs.cmu.edu/resources/cmu-mosei-dataset/)
 
-We also provide the [dataset features]() used in the code.
+We also provide the [dataset features]( https://pan.baidu.com/s/1C4j27t1hK9MVKTPLLU2fkg?pwd=pv6e) used in the code.
 
 ## Code
 
