@@ -6,7 +6,11 @@ An official PyTorch implementation of **CPD-GNN** (Cross-Modal Prompt Disentangl
 
 Multimodal emotion recognition relies on the joint modeling of text, speech, and visual signals. In real-world scenarios, however, some modalities are often unavailable due to noise, occlusion, recognition errors, or device malfunction. This not only weakens the use of complementary cross-modal information, but also intensifies imbalance in modality learning.
 
-To address this issue, we propose **CPD-GNN**, which implements the following core capabilities:
+To address this issue, we propose **CPD-GNN**. The overall architecture is illustrated below:
+
+![Model Architecture](figures/model.png)
+
+CPD-GNN implements the following core capabilities:
 
 + **Unified Semantic Projection & Feature Disentanglement** — Projects incomplete multimodal features into a unified semantic space and disentangles them into shared representations and modality-specific representations.
 + **Cross-modal Information Compensation** — Jointly performs cross-modal information compensation to recover missing modality information.
