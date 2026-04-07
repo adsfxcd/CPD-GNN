@@ -1,113 +1,38 @@
-# CPD-GNN
+# Cross-Modal Prompt Disentangled Graph Neural Networks for Incomplete Conversational Emotion Recognition
 
-**Cross-Modal Prompt Disentangled Graph Neural Networks for Incomplete Conversational Emotion Recognition**
-
-This repository accompanies the paper **"Cross-Modal Prompt Disentangled Graph Neural Networks for Incomplete Conversational Emotion Recognition"** and is intended to host the code, configurations, and experimental materials for incomplete multimodal conversational emotion recognition.
+An official PyTorch implementation of **CPD-GNN** (Cross-Modal Prompt Disentangled Graph Neural Network) for incomplete multimodal conversational emotion recognition.
 
 ## Overview
 
-Multimodal emotion recognition in conversation relies on text, audio, and visual signals. In real-world settings, however, one or more modalities may be unavailable because of noise, occlusion, recognition errors, or device failure. This repository focuses on **incomplete multimodal conversational emotion recognition**, where the model must remain robust under missing-modality conditions.
+Multimodal emotion recognition relies on the joint modeling of text, speech, and visual signals. In real-world scenarios, however, some modalities are often unavailable due to noise, occlusion, recognition errors, or device malfunction. This not only weakens the use of complementary cross-modal information, but also intensifies imbalance in modality learning.
 
-To address this problem, the paper proposes **CPD-GNN**, a unified framework that combines:
+To address this issue, we propose **CPD-GNN**, which implements the following core capabilities:
 
-- shared-private feature disentanglement
-- prototype-driven cross-modal prompt interaction
-- dynamic modality balancing
-- temporal and speaker interaction modeling
-- hypergraph-based higher-order relational reasoning
++ **Unified Semantic Projection & Feature Disentanglement** — Projects incomplete multimodal features into a unified semantic space and disentangles them into shared representations and modality-specific representations.
++ **Cross-modal Information Compensation** — Jointly performs cross-modal information compensation to recover missing modality information.
++ **Dynamic Modality Balancing** — Adaptively balances modality contributions to mitigate learning imbalance under missing-modality conditions.
++ **Contextual & Higher-order Dependency Modeling** — Provides a robust foundation for modeling both local contextual interactions and higher-order conversational dependencies.
 
-## Method Highlights
+## Environment
 
-### 1. Shared-private feature disentanglement
-Incomplete multimodal inputs are projected into a unified semantic space and decomposed into:
-- **shared features** for cross-modal semantic coordination
-- **private features** for modality-specific information retention
++ Python 3.8.18
++ CUDA 11.6
++ torch 1.12.0
++ torch-geometric 2.4.0
 
-### 2. Prototype-driven cross-modal prompting
-Each modality learns compact prototypes from dialogue-level shared semantics. These prototypes guide cross-modal prompt generation so that available modalities can compensate for missing ones more effectively.
-
-### 3. Dynamic modality balancing
-A multimodal router assigns adaptive weights to different modalities according to contextual reliability, reducing modality imbalance during fusion.
-
-### 4. Dual-graph plus hypergraph modeling
-The model builds:
-- a **temporal interaction graph**
-- a **speaker interaction graph**
-
-It then performs graph propagation and hypergraph convolution to capture both local dependencies and higher-order affective relations among utterances.
-
-### 5. Joint optimization
-The framework is trained with a joint objective that combines:
-- task loss
-- reconstruction loss
-- disentanglement loss
+(For details, see requirements.txt)
 
 ## Datasets
 
-Experiments are conducted on three benchmark datasets:
+The following datasets are used in this research:
 
-- **IEMOCAP**
-  - four-class setting
-  - six-class setting
-- **CMU-MOSI**
-- **CMU-MOSEI**
+[IEMOCAP](https://sail.usc.edu/iemocap/index.html), [CMU-MOSI](http://multicomp.cs.cmu.edu/resources/cmu-mosi-dataset/), [CMU-MOSEI](http://multicomp.cs.cmu.edu/resources/cmu-mosei-dataset/)
 
-## Main Findings
+We also provide the [dataset features]() used in the code.
 
-The paper reports that CPD-GNN achieves competitive or superior performance under different missing rates on all three benchmark datasets.
+## Code
 
-Representative results include:
+The complete code will be released after the paper is accepted.
 
-- On **IEMOCAPSix**, CPD-GNN shows clear gains under severe modality missingness.
-- On **CMU-MOSEI**, the method outperforms strong baselines at multiple missing rates.
-- Ablation results show that prompt generation, modality balancing, temporal interaction modeling, and speaker interaction modeling all contribute to final performance.
 
-## Suggested Repository Structure
 
-This is a suggested organization for the repository:
-
-```text
-CPD-GNN/
-├── README.md
-├── configs/
-├── data/
-├── datasets/
-├── models/
-├── modules/
-├── scripts/
-├── utils/
-├── checkpoints/
-└── results/
-```
-
-## Planned Contents
-
-The repository can be organized to include:
-
-- data preprocessing scripts
-- model implementation
-- training and evaluation scripts
-- configuration files
-- ablation settings
-- visualization scripts for confusion matrices and parameter analysis
-
-## Citation
-
-If you use this work, please cite the corresponding paper.
-
-```bibtex
-@article{qiao2026cpdgnn,
-  title={Cross-Modal Prompt Disentangled Graph Neural Networks for Incomplete Conversational Emotion Recognition},
-  author={Qiao, Shi and Yang, Rui and Hu, Bin and Peng, Hong and Dang, Jisheng},
-  journal={Preprint},
-  year={2026}
-}
-```
-
-## Status
-
-This repository is currently being organized. Code, configs, and detailed usage instructions can be added as they are finalized.
-
-## Contact
-
-For questions about the manuscript or repository content, please contact the authors listed in the paper.
