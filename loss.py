@@ -74,7 +74,7 @@ class MaskedCELoss(nn.Module):
         umask = umask.view(-1,1) # [batch*seq_len, 1]
         target = target.view(-1,1) # [batch*seq_len, 1]
         pred = F.log_softmax(pred, 1) # [batch*seqlen, n_classes]
-        loss = self.loss(pred*umask, (target*umask).squeeze().long()) / torch.sum(umask) 
+        loss = self.loss(pred*umask, (target*umask).squeeze().long()) / torch.sum(umask)
         return loss
 
 
@@ -138,7 +138,7 @@ class MaskedHuberLoss(nn.Module):
         pred -> [batch*seq_len]
         target -> [batch*seq_len]
         umask -> [batch*seq_len]
-        
+
         Huber Loss:
         L = 0.5 * (y - y_hat)^2           if |y - y_hat| <= delta
         L = delta * |y - y_hat| - 0.5 * delta^2   otherwise
@@ -148,7 +148,7 @@ class MaskedHuberLoss(nn.Module):
         umask = umask.view(-1, 1) # [batch*seq_len, 1]
         loss = self.loss(pred*umask, target*umask) / torch.sum(umask)
         return loss
-# ==================== NEW: Disentangle Loss for Prompt-based Fusion ====================
+# ==================== Disentangle Loss for Prompt-based Fusion ====================
 
 class JSDLoss(nn.Module):
     """Jensen-Shannon Divergence Loss for aligning shared features"""
@@ -163,18 +163,18 @@ class JSDLoss(nn.Module):
         """
         p = p.permute(1, 0, 2).contiguous()  # [batch, seq_len, dim]
         q = q.permute(1, 0, 2).contiguous()
-        
+
         p = p.view(-1, p.size(-1))  # [batch*seq_len, dim]
         q = q.view(-1, q.size(-1))
         mask = umask.view(-1, 1)  # [batch*seq_len, 1]
-        
+
         # Apply softmax to convert to probability distributions
         p_prob = F.softmax(p, dim=-1)
         q_prob = F.softmax(q, dim=-1)
-        
+
         m = (0.5 * (p_prob + q_prob)).log()
         jsd = 0.5 * (self.kl(m, p_prob.log()) + self.kl(m, q_prob.log()))
-        
+
         # Apply mask and average
         jsd = (jsd * mask).sum() / max(mask.sum(), 1e-6)
         return jsd
@@ -183,7 +183,7 @@ class JSDLoss(nn.Module):
 class DisentangleLoss(nn.Module):
     """
     Disentangle Loss to encourage separation between shared and private features
-    
+
     Components:
     1. Private features should be orthogonal to each other (different modalities capture different info)
     2. Private features should be orthogonal to shared features (separation)
@@ -202,11 +202,11 @@ class DisentangleLoss(nn.Module):
         """
         x = x.permute(1, 0, 2).contiguous()  # [batch, seq_len, dim]
         y = y.permute(1, 0, 2).contiguous()
-        
+
         x = x.view(-1, x.size(-1))  # [batch*seq_len, dim]
         y = y.view(-1, y.size(-1))
         mask = umask.view(-1)  # [batch*seq_len]
-        
+
         sim = self.cos_sim(x, y).abs()  # [batch*seq_len]
         return (sim * mask).sum() / max(mask.sum(), 1e-6)
 
@@ -221,31 +221,31 @@ class DisentangleLoss(nn.Module):
         """
         shared_a, shared_t, shared_v = shared_features
         private_a, private_t, private_v = private_features
-        
+
         # 1. Private features should be orthogonal to each other
         loss_private_ortho = (
             self._masked_abs_cos_sim(private_a, private_t, umask) +
             self._masked_abs_cos_sim(private_a, private_v, umask) +
             self._masked_abs_cos_sim(private_t, private_v, umask)
         ) / 3.0
-        
+
         # 2. Private features should be orthogonal to their corresponding shared features
         loss_private_shared = (
             self._masked_abs_cos_sim(private_a, shared_a, umask) +
             self._masked_abs_cos_sim(private_t, shared_t, umask) +
             self._masked_abs_cos_sim(private_v, shared_v, umask)
         ) / 3.0
-        
+
         # 3. Shared features should be aligned (use JSD to encourage similarity)
         loss_shared_align = (
             self.jsd(shared_a, shared_t, umask) +
             self.jsd(shared_a, shared_v, umask) +
             self.jsd(shared_t, shared_v, umask)
         ) / 3.0
-        
+
         # Total disentangle loss
         total_loss = loss_private_ortho + loss_private_shared + loss_shared_align
-        
+
         return total_loss
 
 
@@ -268,20 +268,20 @@ class ModalConsistencyLoss(nn.Module):
         a = log_prob_a.permute(1, 0, 2).contiguous().view(-1, log_prob_a.size(-1))
         t = log_prob_t.permute(1, 0, 2).contiguous().view(-1, log_prob_t.size(-1))
         v = log_prob_v.permute(1, 0, 2).contiguous().view(-1, log_prob_v.size(-1))
-        
+
         mask = umask.view(-1, 1)  # [batch*seq_len, 1]
-        
+
         # Convert to probabilities
         main_prob = F.softmax(main, dim=-1)
         a_prob = F.log_softmax(a, dim=-1)
         t_prob = F.log_softmax(t, dim=-1)
         v_prob = F.log_softmax(v, dim=-1)
-        
+
         # KL divergence from main to each modality
         loss = (
             self.kl(a_prob * mask, main_prob * mask) +
             self.kl(t_prob * mask, main_prob * mask) +
             self.kl(v_prob * mask, main_prob * mask)
         ) / 3.0
-        
+
         return loss

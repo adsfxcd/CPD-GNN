@@ -27,7 +27,7 @@ from sklearn.metrics import f1_score, accuracy_score
 from sklearn.preprocessing import OneHotEncoder
 
 import path
-from model_SDRGNN import GraphModel, GraphModelWithPrompt
+from model import GraphModel, GraphModelWithPrompt
 from dataloader_iemocap import IEMOCAPDataset
 from dataloader_cmumosi import CMUMOSIDataset
 from loss import MaskedCELoss, MaskedMSELoss, MaskedMAELoss, MaskedHuberLoss, MaskedReconLoss, DisentangleLoss
@@ -35,7 +35,7 @@ from loss import MaskedCELoss, MaskedMSELoss, MaskedMAELoss, MaskedHuberLoss, Ma
 
 def get_loaders(audio_root, text_root, video_root, num_folder, dataset, batch_size, num_workers, seed):
     """Load data and create train/val/test loaders"""
-    
+
     if dataset in ['CMUMOSI', 'CMUMOSEI']:
         dataset_obj = CMUMOSIDataset(label_path=path.PATH_TO_LABEL_Win[dataset],
                                      audio_root=audio_root,
@@ -116,7 +116,7 @@ def build_model(args, adim, tdim, vdim):
     """Build model - either original GraphModel or new GraphModelWithPrompt"""
     D_e = args.hidden
     graph_h = args.hidden // 2
-    
+
     if args.use_prompt:
         model = GraphModelWithPrompt(
             args.base_model,
@@ -272,7 +272,7 @@ def train_or_eval_model(args, model, reg_loss, cls_loss, rec_loss, dis_loss, dat
             masked_text_host = text_host * host_mask
             masked_visual_host = visual_host * host_mask
             audio_host_mask = text_host_mask = visual_host_mask = host_mask
-            
+
             guest_mask = torch.logical_and(torch.logical_and(audio_guest_mask, text_guest_mask), visual_guest_mask).int()
             masked_audio_guest = audio_guest * guest_mask
             masked_text_guest = text_guest * guest_mask
@@ -341,7 +341,7 @@ def train_or_eval_model(args, model, reg_loss, cls_loss, rec_loss, dis_loss, dat
         templabel = label.cpu().data.numpy()
         tempqmask = qmask.cpu().data.numpy()
         tempfmask = input_features_mask[0].transpose(0, 1).cpu().data.numpy()
-        
+
         for ii in range(len(tempseqlen)):
             itemhidden = temphidden[ii][:int(tempseqlen[ii]), :]
             itempred = temppred[ii][:int(tempseqlen[ii]), :]
@@ -357,16 +357,16 @@ def train_or_eval_model(args, model, reg_loss, cls_loss, rec_loss, dis_loss, dat
         # Calculate losses
         lp_ = log_prob.transpose(0, 1).contiguous().view(-1, log_prob.size(2))
         labels_ = label.view(-1)
-        
+
         # Classification loss
         if dataset in ['IEMOCAPFour', 'IEMOCAPSix']:
             loss1 = cls_loss(lp_, labels_, umask)
         elif dataset in ['CMUMOSI', 'CMUMOSEI']:
             loss1 = reg_loss(lp_, labels_, umask)
-        
+
         # Reconstruction loss
         loss2 = rec_loss(recon_input_features, input_features, input_features_mask, umask, adim, tdim, vdim)
-        
+
         # Disentangle loss (only for prompt model)
         if use_prompt and shared_features is not None and args.disentangle_weight > 0:
             loss3 = dis_loss(shared_features, private_features, umask)
@@ -445,7 +445,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_classes', type=int, default=2, help='number of classes')
     parser.add_argument('--n_speakers', type=int, default=2, help='number of speakers')
 
-    # NEW: Prompt-based model params
+    # Prompt-based model params
     parser.add_argument('--use-prompt', action='store_true', default=False,
                         help='whether to use Prompt-based Cross-Modal Interaction')
     parser.add_argument('--prompt-dim', type=int, default=16,
@@ -476,7 +476,7 @@ if __name__ == '__main__':
                         help='whether to use reconstruction features for classification')
     parser.add_argument('--lower-bound', action='store_true', default=False,
                         help='whether remove missing modality in training')
-    
+
     args = parser.parse_args()
 
     # Set dataset-specific parameters
@@ -504,7 +504,7 @@ if __name__ == '__main__':
     cuda = torch.cuda.is_available() and not args.no_cuda
 
     print("=" * 60)
-    print("SDR-GNN with Prompt-based Cross-Modal Interaction")
+    print("CPD-GNN with Prompt-based Cross-Modal Interaction")
     print("=" * 60)
     print(args)
     print(f"Dataset: {args.dataset}")
@@ -523,7 +523,7 @@ if __name__ == '__main__':
     video_root = os.path.join(path.PATH_TO_FEATURES_Win[args.dataset], video_feature)
     assert os.path.exists(audio_root) and os.path.exists(text_root) and os.path.exists(video_root), \
         f'Features not exist!'
-    
+
     train_loaders, val_loaders, test_loaders, adim, tdim, vdim = get_loaders(
         audio_root=audio_root,
         text_root=text_root,
@@ -558,13 +558,13 @@ if __name__ == '__main__':
         cls_loss = MaskedCELoss()
         rec_loss = MaskedReconLoss()
         dis_loss = DisentangleLoss()
-        
+
         if cuda:
             model.cuda()
             cls_loss.cuda()
             rec_loss.cuda()
             dis_loss.cuda()
-        
+
         optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.l2)
 
         print(f'Step2: training (multiple epochs)')
@@ -572,7 +572,7 @@ if __name__ == '__main__':
         all_labels = []
         val_fscores = []
         test_fscores, test_accs, test_recon, test_disentangle = [], [], [], []
-        
+
         for epoch in range(args.epochs):
             assert args.mask_type.startswith('constant'), f'mask_type should be constant-x.x'
             mask_rate = float(args.mask_type.split('-')[-1])
@@ -604,7 +604,7 @@ if __name__ == '__main__':
                 'test_labels': testsave[1], 'test_preds': testsave[0],
                 'test_hiddens': testsave[3], 'test_names': test_names, 'test_fmask': testsave[4]
             })
-            
+
             print(f'epoch:{epoch + 1}; train_fscore:{train_fscore:2.2%}; '
                   f'train_loss:{train_loss[0]}; cls_loss:{train_loss[1]}; '
                   f'rec_loss:{train_loss[2]}; dis_loss:{train_loss[3]}')
@@ -616,46 +616,46 @@ if __name__ == '__main__':
         bestrecon = test_recon[best_index]
         bestdisentangle = test_disentangle[best_index]
         bestsave = all_labels[best_index]
-        
+
         folder_f1.append(bestf1)
         folder_acc.append(bestacc)
         folder_recon.append(bestrecon)
         folder_disentangle.append(bestdisentangle)
         folder_save.append(bestsave)
         folder_losswhole.append(all_losses)
-        
+
         if args.epochs >= 60:
             folder_savewhole.append([
                 best_index, all_labels[10], all_labels[20],
                 all_labels[50], all_labels[min(80, args.epochs-1)], all_labels[best_index]
             ])
-        
+
         end_time = time.time()
         print(f'>>>>> Finish: training on the {ii + 1} folder, duration: {end_time - start_time:.2f}s >>>>>')
         print(f'Best epoch: {best_index + 1}, Test F1: {bestf1:2.2%}, Test Acc: {bestacc:2.2%}')
 
     print(f'\n=============== Final Results ================\n')
     save_root = path.PATH_TO_SAVE_ROOT
-    
+
     # Generate save path
     mask_rate = args.mask_type.split('-')[-1]
     prompt_suffix = '_prompt' if args.use_prompt else ''
     suffix_name = f'{args.dataset.lower()}_Graph{args.base_model}{prompt_suffix}_mask:{mask_rate}'
     feature_name = f'{audio_feature}_{text_feature}_{video_feature}'
     cls_name = f'lossrecon:{args.loss_recon}+lower:{args.lower_bound}+reccls:{args.reccls_flag}'
-    
+
     mean_f1 = np.mean(np.array(folder_f1))
     mean_acc = np.mean(np.array(folder_acc))
     mean_recon = np.mean(np.array(folder_recon))
     mean_disentangle = np.mean(np.array(folder_disentangle))
-    
+
     res_name = f'f1:{mean_f1:2.2%}_acc:{mean_acc:2.2%}_reconloss:{mean_recon:.4f}_disloss:{mean_disentangle:.4f}'
     res_name = res_name.replace(":", "_")
     save_path = os.path.join(
         save_root,
         f'{suffix_name.replace(":", "_")}_{res_name.replace("%", "_")}.npz'
     )
-    
+
     print(f'Mean F1: {mean_f1:2.2%}')
     print(f'Mean Accuracy: {mean_acc:2.2%}')
     print(f'Mean Recon Loss: {mean_recon:.4f}')
