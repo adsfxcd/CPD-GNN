@@ -14,7 +14,13 @@ This minimal release contains only the files required for training and evaluatio
 - `path.py`: configurable dataset/result paths
 - `requirements.txt`: runtime dependencies
 
-Datasets, extracted features, logs, parameter search outputs, result files, plotting scripts, and environment-packaging files are intentionally excluded.
+## Datasets
+
+The following datasets are used in this research:
+
+[IEMOCAP](https://sail.usc.edu/iemocap/index.html), [CMU-MOSI](http://multicomp.cs.cmu.edu/resources/cmu-mosi-dataset/), [CMU-MOSEI](http://multicomp.cs.cmu.edu/resources/cmu-mosei-dataset/)
+
+The extracted dataset features can be downloaded from [Baidu Netdisk](https://pan.baidu.com/s/1C4j27t1hK9MVKTPLLU2fkg?pwd=pv6e).
 
 ## Data Layout
 
