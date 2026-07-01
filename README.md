@@ -2,6 +2,10 @@
 
 Official PyTorch implementation of CPD-GNN (Cross-Modal Prompt Disentangled Graph Neural Network) for incomplete multimodal conversational emotion recognition.
 
+## Overview
+
+![Model Architecture](figures/model.png)
+
 ## Files
 
 This minimal release contains only the files required for training and evaluation:
