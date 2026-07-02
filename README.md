@@ -46,10 +46,4 @@ You can also set `CPD_GNN_DATA_DIR` to the directory that contains these dataset
 python train.py --use-prompt --loss-recon --dataset IEMOCAPSix --audio-feature wav2vec-large-c-UTT --text-feature deberta-large-4-UTT --video-feature manet_UTT --base-model GRU --mask-type constant-0.4
 ```
 
-## Attribution
 
-This repository should be used and cited together with the CPD-GNN paper. Some graph-based training utilities are adapted from prior incomplete multimodal conversational emotion recognition code, including the SDR-GNN research code/paper:
-
-Fu, Fangze, Wei Ai, Fan Yang, Yuntao Shou, Tao Meng, and Keqin Li. "SDR-GNN: Spectral Domain Reconstruction Graph Neural Network for incomplete multimodal learning in conversational emotion recognition." Knowledge-Based Systems, 2024.
-
-Please verify upstream license compatibility before redistribution and cite both the CPD-GNN work and any reused/adapted prior work required by your manuscript or repository policy.
